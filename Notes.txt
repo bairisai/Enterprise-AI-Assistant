@@ -1,0 +1,6 @@
+Day1 notes:
+-> A module is a single Python file.
+-> A package is a directory that groups related modules.
+-> A virtual environment isolates project dependencies.
+-> Absolute imports improve readability and maintainability.
+-> Type hints enhance readability, tooling, and framework integration without changing Python's dynamic nature.
