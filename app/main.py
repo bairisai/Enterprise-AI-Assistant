@@ -1,8 +1,14 @@
 from fastapi import FastAPI
-from app.config import APPLICATION_NAME, APPLICATION_VERSION
+from app.routers.health import router as health_router
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format = "%(asctime)s - %(levelname)s %(name)s - %(message)s"
+    )
+
+# logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-@app.get("/health")
-def health_check() -> dict:
-    return {"status": "healthy", "application": APPLICATION_NAME, "application_version": APPLICATION_VERSION}
+app.include_router(health_router)
