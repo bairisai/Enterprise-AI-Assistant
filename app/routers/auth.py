@@ -6,4 +6,4 @@ router = APIRouter()
 
 @router.post("/register")
 def test_register_request(request: RegisterRequest):
-    return {"message": "Received request"}
+    print(f"Received registration request: {request}")
