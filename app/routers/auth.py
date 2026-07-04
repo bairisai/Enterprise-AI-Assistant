@@ -9,4 +9,4 @@ auth_service = AuthService()
 
 @router.post("/register", response_model=RegisterResponse)
 def test_register_request(request: RegisterRequest): 
-    return auth_service.register_user()
+    return auth_service.register_user(request)

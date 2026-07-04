@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.handlers.exception_handlers import register_exception_handlers
 from app.routers.health import router as health_router
 from app.routers.auth import router as auth_router
 import logging
@@ -11,6 +12,8 @@ logging.basicConfig(
 # logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+register_exception_handlers(app)
 
 app.include_router(health_router)
 
