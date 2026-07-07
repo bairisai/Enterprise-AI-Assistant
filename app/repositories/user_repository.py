@@ -1,15 +1,26 @@
-from app.models.requests import RegisterRequest
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+
+from app.entities.user import User
+from app.exceptions.auth_exceptions import UserAlreadyExistsException
 
 
 class UserRepository:
-    def create_user(self, username: str) -> None:
-        """Create a new user from the registration request."""
-        pass
+    def __init__(self, db: Session):
+        self.db = db
 
-    def get_user_by_username(self, username: str) -> None:
-        """Retrieve a user record by username."""
-        pass
+    def create_user(self, user: User) -> User:
+        self.db.add(user)
+        try:
+            self.db.commit()
+        except IntegrityError:
+            self.db.rollback()
+            raise UserAlreadyExistsException(f"User with username '{user.username}' already exists")
+        self.db.refresh(user)
+        return user
+
+    def get_user_by_username(self, username: str) -> User | None:
+        return self.db.query(User).filter(User.username == username).first()
 
     def username_exists(self, username: str) -> bool:
-        """Check whether a username already exists."""
-        pass
+        return self.get_user_by_username(username) is not None
