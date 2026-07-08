@@ -1,9 +1,10 @@
 import bcrypt
 from app.entities.user import User
-from app.exceptions.auth_exceptions import UserAlreadyExistsException
-from app.models.requests import RegisterRequest
-from app.models.responses import RegisterResponse
+from app.exceptions.auth_exceptions import InvalidCredentialsException, UserAlreadyExistsException
+from app.models.requests import LoginRequest, RegisterRequest
+from app.models.responses import RegisterResponse, TokenResponse
 from app.repositories.user_repository import UserRepository
+from app.security.jwt_handler import create_access_token
 
 
 
@@ -30,3 +31,11 @@ class AuthService:
     @staticmethod   
     def verify_password(password: str, hashed: str) -> bool:
         return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+    
+    def login_user(self, request: LoginRequest) -> TokenResponse:
+        user = self.repository.get_user_by_username(request.username)
+        if user is None or not self.verify_password(request.password, user.hashed_password):
+            raise InvalidCredentialsException("Invalid username or password")
+        
+        token = create_access_token(subject = user.username)
+        return TokenResponse(access_token=token)
