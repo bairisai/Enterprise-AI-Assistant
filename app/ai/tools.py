@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from langchain_core.tools import tool
 from sqlalchemy.orm import Session
 
@@ -15,3 +17,8 @@ def make_check_user_exists_tool(db: Session):
             return f"No user found with username '{username}'."
         return f"User found: username={user.username}, email={user.email}"
     return check_user_exists
+
+@tool
+def get_current_date() -> str:
+    """Returns today's date in YYYY-MM-DD format."""
+    return datetime.now().strftime("%Y-%m-%d")
