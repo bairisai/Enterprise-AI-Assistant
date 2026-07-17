@@ -34,21 +34,63 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 embeddings_model = GoogleGenerativeAIEmbeddings(model="gemini-embedding-001")
 
-question = "What happens if my item arrives damaged from another country?"
+
 
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
+import os
+documents = [
+    Document(
+        page_content=chunk,
+        metadata={"source": "refund_ploicy.txt", "chunk_index": i},
+    )
+    for i, chunk in enumerate(chunks)
+]
 
-documents = [Document(page_content=chunk) for chunk in chunks]
+persist_directory = "./chroma_db"
+collection_name = "refund_policy_docs"
 
-vector_store = Chroma.from_documents(
-    documents=documents,
-    embedding=embeddings_model,
-)
+if os.path.exists(persist_directory):
+    vector_store = Chroma(
+        persist_directory=persist_directory,
+        collection_name=collection_name,
+        embedding_function=embeddings_model,
+    )
+    print("Loaded existing persisted vector store.\n")
+else:
+    vector_store = Chroma.from_documents(
+        documents=documents,
+        embedding=embeddings_model,
+        persist_directory=persist_directory,
+        collection_name=collection_name,
+    )
+    print("Created new vector store and persisted it to disk.\n")
+
+question = "What happens if my item arrives damaged from another country?"
 
 results = vector_store.similarity_search(question, k=2)
 
 for i, doc in enumerate(results):
-    print(f"--- Result {i} ---")
+    print(f"--- Result {i} (source: {doc.metadata.get('source')}, chunk {doc.metadata.get('chunk_index')}) ---")
     print(doc.page_content)
     print()
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.output_parsers import StrOutputParser
+ 
+context = "\n\n".join(doc.page_content for doc in results)
+ 
+rag_prompt = ChatPromptTemplate.from_template(
+    "Answer the question using only the context below. "
+    "If the answer isn't in the context, say you don't know.\n\n"
+    "Context:\n{context}\n\nQuestion: {question}"
+)
+ 
+chat_model = ChatGoogleGenerativeAI(model="gemini-flash-latest")
+rag_chain = rag_prompt | chat_model | StrOutputParser()
+ 
+answer = rag_chain.invoke({"context": context, "question": question})
+ 
+print("--- Final Answer ---")
+print(answer)
