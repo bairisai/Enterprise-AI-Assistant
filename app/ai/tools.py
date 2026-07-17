@@ -3,6 +3,7 @@ from datetime import datetime
 from langchain_core.tools import tool
 from sqlalchemy.orm import Session
 
+from app.ai.vector_store import get_vector_store
 from app.repositories.user_repository import UserRepository
 
 def make_check_user_exists_tool(db: Session):
@@ -22,3 +23,13 @@ def make_check_user_exists_tool(db: Session):
 def get_current_date() -> str:
     """Returns today's date in YYYY-MM-DD format."""
     return datetime.now().strftime("%Y-%m-%d")
+
+@tool
+def search_documents(question: str) -> str:
+    """Searches company documents (like the refund policy) for information
+    relevant to the given question, and returns the most relevant excerpts."""
+    vector_store = get_vector_store()
+    results = vector_store.similarity_search(question, k=2)
+    if not results:
+        return "No relevant documents found."
+    return "\n\n".join(doc.page_content for doc in results)
