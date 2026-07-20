@@ -22,6 +22,14 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
+# Override whatever's in alembic.ini with the real DATABASE_URL environment
+# variable, if one is set — so migrations always target the same database
+# the running app is actually configured to use (SQLite locally, Postgres
+# inside Docker), instead of a value hardcoded in alembic.ini.
+config.set_main_option(
+    "sqlalchemy.url", os.getenv("DATABASE_URL", "sqlite:///./test.db")
+)
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 target_metadata = Base.metadata
