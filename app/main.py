@@ -6,8 +6,7 @@ from app.handlers.exception_handlers import register_exception_handlers
 from app.routers.health import router as health_router
 from app.routers.auth import router as auth_router
 from app.routers.assistant import router as assistant_router
-
-
+from app.routers.documents import router as documents_router
 
 import logging
 
@@ -30,3 +29,4 @@ app.include_router(auth_router)
 
 app.include_router(assistant_router)
 
+app.include_router(documents_router)
