@@ -558,6 +558,8 @@ enterprise-ai-assistant/
 | ------ | --------- | ------------------------ |
 | GET    | `/health` | Application health check |
 
+---
+
 # 🚀 Getting Started
 
 ## 1. Clone the Repository
@@ -650,6 +652,8 @@ Swagger Documentation:
 http://localhost:8000/docs
 ```
 
+---
+
 # 🧪 Running Tests
 
 Run the complete unit test suite:
@@ -691,6 +695,8 @@ htmlcov/index.html
 - No ChromaDB required
 - No Google Gemini API key required
 
+---
+
 # 🐳 Docker
 
 Build and start the services:
@@ -718,6 +724,8 @@ The Docker setup includes:
 - Environment-based configuration
 - Persistent database storage
 
+---
+
 # ⚙️ Continuous Integration
 
 This project uses **GitHub Actions** to automatically validate every push and pull request.
@@ -731,6 +739,8 @@ The CI pipeline performs the following steps:
 - Fails the workflow if any test fails
 
 This ensures that every committed change maintains application stability and prevents regressions before code is merged.
+
+---
 
 # 🧩 Engineering Challenges & Lessons Learned
 
@@ -766,6 +776,8 @@ This project strengthened my understanding of:
 - Debugging framework-level issues instead of applying temporary fixes.
 - Building production-ready APIs with FastAPI, Docker, PostgreSQL, and GitHub Actions.
 - Balancing clean architecture with practical implementation decisions.
+
+---
 
 # 📈 Future Improvements
 
