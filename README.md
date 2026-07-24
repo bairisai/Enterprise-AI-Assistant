@@ -121,3 +121,130 @@ flowchart TD
 - **Tool Calling** enables the AI agent to interact with application services such as database lookups, document retrieval, and utility functions.
 - **RAG Pipeline** retrieves relevant document chunks from ChromaDB before the LLM generates its final response.
 - **PostgreSQL** stores persistent application data, while **ChromaDB** stores vector embeddings for semantic search.
+
+## 🔐 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Router as FastAPI Router
+    participant Service as AuthService
+    participant Repository as UserRepository
+    participant Database as PostgreSQL
+
+    Client->>Router: POST /login
+    Router->>Service: login_user(request)
+
+    Service->>Repository: get_user_by_username(username)
+    Repository->>Database: SELECT user
+    Database-->>Repository: User
+
+    Repository-->>Service: User
+
+    Service->>Service: Verify password (bcrypt)
+
+    alt Valid Credentials
+        Service->>Service: Generate JWT
+        Service-->>Router: Access Token
+        Router-->>Client: 200 OK + JWT
+    else Invalid Credentials
+        Service-->>Router: InvalidCredentialsException
+        Router-->>Client: 401 Unauthorized
+    end
+```
+
+## 🤖 AI Request Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Router as FastAPI Router
+    participant Service as AssistantService
+    participant Graph as LangGraph
+    participant LLM as Google Gemini
+    participant Tools as AI Tools
+
+    Client->>Router: POST /assistant/ask
+    Router->>Service: ask(question)
+
+    Service->>Graph: invoke(question)
+
+    Graph->>LLM: Generate Response
+
+    alt Tool Required
+        LLM-->>Graph: Tool Call
+        Graph->>Tools: Execute Tool
+        Tools-->>Graph: Tool Result
+        Graph->>LLM: Continue Generation
+    end
+
+    LLM-->>Graph: Final Response
+    Graph-->>Service: AI Response
+    Service-->>Router: Answer
+    Router-->>Client: 200 OK
+```
+
+## 📄 Document Ingestion (RAG)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API as Documents API
+    participant Loader as PDF Loader
+    participant Splitter as Text Splitter
+    participant Embedder as Gemini Embeddings
+    participant Chroma as ChromaDB
+
+    Client->>API: Upload PDF
+
+    API->>Loader: Load Document
+    Loader-->>API: Pages
+
+    API->>Splitter: Split into Chunks
+    Splitter-->>API: Document Chunks
+
+    API->>Embedder: Generate Embeddings
+    Embedder-->>API: Vector Embeddings
+
+    API->>Chroma: Store Embeddings
+
+    Chroma-->>API: Success
+
+    API-->>Client: Chunks Indexed
+```
+
+## 🔎 Retrieval-Augmented Generation (RAG)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Assistant
+    participant LangGraph
+    participant SearchTool
+    participant ChromaDB
+    participant Gemini
+
+    User->>Assistant: Ask Question
+
+    Assistant->>LangGraph: invoke()
+
+    LangGraph->>Gemini: Initial Prompt
+
+    Gemini-->>LangGraph: Tool Call
+
+    LangGraph->>SearchTool: search_documents()
+
+    SearchTool->>ChromaDB: similarity_search()
+
+    ChromaDB-->>SearchTool: Relevant Chunks
+
+    SearchTool-->>LangGraph: Context
+
+    LangGraph->>Gemini: Prompt + Retrieved Context
+
+    Gemini-->>LangGraph: Final Answer
+
+    LangGraph-->>Assistant: Response
+
+    Assistant-->>User: AI Answer
+```
