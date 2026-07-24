@@ -16,7 +16,10 @@ def make_check_user_exists_tool(db: Session):
         user = repository.get_user_by_username(username)
         if user is None:
             return f"No user found with username '{username}'."
-        return f"User found: username={user.username}, email={user.email}"
+        return {
+            "username": user.username,
+            "email": user.email,
+        }
     return check_user_exists
 
 @tool

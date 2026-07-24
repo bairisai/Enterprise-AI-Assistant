@@ -15,6 +15,7 @@ router = APIRouter()
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
     repository = UserRepository(db)
     return AuthService(repository)
+
 @router.post("/register", response_model=RegisterResponse)
 def register(request: RegisterRequest, auth_service: AuthService = Depends(get_auth_service)):
     return auth_service.register_user(request)
