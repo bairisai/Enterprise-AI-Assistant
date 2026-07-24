@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
-from app.ai.graph import make_call_model_node, should_continue, make_run_tools_node
+from app.ai.graph import build_agent_graph, make_call_model_node, should_continue, make_run_tools_node
 from langgraph.graph import END
 
 def test_call_model_node_returns_model_response():
@@ -165,3 +165,28 @@ def test_run_tools_node_executes_multiple_tools():
             second_result,
         ]
     }
+
+def test_build_agent_graph_returns_compiled_graph():
+    mock_model = Mock()
+
+    model_response = AIMessage(content="Finished")
+    model_response.tool_calls = []
+
+    mock_model.invoke.return_value = model_response
+
+    graph = build_agent_graph(
+        model_with_tools=mock_model,
+        tools_by_name={},
+    )
+
+    result = graph.invoke(
+        {
+            "messages": [
+                HumanMessage(content="Hello")
+            ]
+        }
+    )
+
+    mock_model.invoke.assert_called_once()
+
+    assert result["messages"][-1].content == "Finished"
