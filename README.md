@@ -442,3 +442,344 @@ The implementation is guided by several established software engineering princip
 - **Separation of Concerns** — Routing, business logic, persistence, AI orchestration, and security are isolated into dedicated layers.
 - **Composition over Tight Coupling** — Services compose repositories, AI agents, and tools rather than instantiating them internally.
 - **Testability by Design** — Components can be independently mocked and verified through unit tests.
+
+## 📂 Project Structure
+
+```text
+enterprise-ai-assistant/
+│
+├── app/
+│   ├── ai/
+│   │   ├── graph.py              # LangGraph workflow orchestration
+│   │   ├── ingestion.py          # PDF ingestion pipeline
+│   │   ├── tools.py              # AI tools available to the LLM
+│   │   └── vector_store.py       # ChromaDB configuration
+│   │
+│   ├── database/
+│   │   ├── base.py               # SQLAlchemy Base
+│   │   └── session.py            # Database session management
+│   │
+│   ├── entities/
+│   │   └── user.py               # User ORM model
+│   │
+│   ├── exceptions/
+│   │   └── auth_exceptions.py    # Custom authentication exceptions
+│   │
+│   ├── handlers/
+│   │   └── exception_handlers.py # Global exception handlers
+│   │
+│   ├── models/
+│   │   ├── requests.py           # API request models
+│   │   └── responses.py          # API response models
+│   │
+│   ├── repositories/
+│   │   └── user_repository.py    # Database access layer
+│   │
+│   ├── routers/
+│   │   ├── assistant.py          # AI Assistant endpoints
+│   │   ├── auth.py               # Authentication endpoints
+│   │   ├── documents.py          # Document ingestion endpoints
+│   │   └── health.py             # Health check endpoint
+│   │
+│   ├── security/
+│   │   ├── auth_dependency.py    # JWT authentication dependency
+│   │   └── jwt_handler.py        # JWT creation & validation
+│   │
+│   ├── services/
+│   │   ├── assistant_service.py  # AI business logic
+│   │   └── auth_service.py       # Authentication business logic
+│   │
+│   ├── config.py                 # Application configuration
+│   └── main.py                   # FastAPI application entry point
+│
+├── alembic/                      # Database migrations
+├── tests/                        # Unit test suite
+├── .github/workflows/            # GitHub Actions CI
+├── docker-compose.yml            # Local container orchestration
+├── Dockerfile                    # API container image
+├── requirements.txt              # Python dependencies
+└── README.md                     # Project documentation
+```
+
+# 🛠️ Technology Stack
+
+| Category            | Technology                                 |
+| ------------------- | ------------------------------------------ |
+| Language            | Python 3.13                                |
+| Backend Framework   | FastAPI                                    |
+| ORM                 | SQLAlchemy                                 |
+| Database            | PostgreSQL                                 |
+| Database Migrations | Alembic                                    |
+| Authentication      | JWT (PyJWT)                                |
+| Password Hashing    | bcrypt                                     |
+| AI Framework        | LangChain                                  |
+| Agent Orchestration | LangGraph                                  |
+| LLM                 | Google Gemini (`gemini-flash-latest`)      |
+| Embeddings          | Gemini Embeddings (`gemini-embedding-001`) |
+| Vector Database     | ChromaDB                                   |
+| Document Loader     | PyPDFLoader                                |
+| Text Splitting      | RecursiveCharacterTextSplitter             |
+| Testing             | pytest                                     |
+| Containerization    | Docker & Docker Compose                    |
+| CI/CD               | GitHub Actions                             |
+| Configuration       | python-dotenv                              |
+
+# 📡 API Endpoints
+
+## Authentication
+
+| Method | Endpoint    | Description                         |
+| ------ | ----------- | ----------------------------------- |
+| POST   | `/register` | Register a new user                 |
+| POST   | `/login`    | Authenticate user and generate JWT  |
+| GET    | `/me`       | Retrieve authenticated user profile |
+
+---
+
+## AI Assistant
+
+| Method | Endpoint         | Description                                  |
+| ------ | ---------------- | -------------------------------------------- |
+| POST   | `/assistant/ask` | Ask questions to the Enterprise AI Assistant |
+
+---
+
+## Document Management
+
+| Method | Endpoint            | Description                             |
+| ------ | ------------------- | --------------------------------------- |
+| POST   | `/documents/ingest` | Upload a PDF and index it into ChromaDB |
+
+---
+
+## Health
+
+| Method | Endpoint  | Description              |
+| ------ | --------- | ------------------------ |
+| GET    | `/health` | Application health check |
+
+# 🚀 Getting Started
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/enterprise-ai-assistant.git
+
+cd enterprise-ai-assistant
+```
+
+---
+
+## 2. Create a Virtual Environment
+
+```bash
+python -m venv .venv
+```
+
+### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+source .venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## 4. Configure Environment Variables
+
+Create a `.env` file in the project root.
+
+```env
+GOOGLE_API_KEY=your_google_api_key
+
+JWT_SECRET_KEY=your_secret_key
+
+POSTGRES_USER=postgres
+
+POSTGRES_PASSWORD=password
+
+POSTGRES_DB=enterprise_ai
+```
+
+---
+
+## 5. Start PostgreSQL using Docker
+
+```bash
+docker compose up -d db
+```
+
+---
+
+## 6. Run Database Migrations
+
+```bash
+alembic upgrade head
+```
+
+---
+
+## 7. Start the Application
+
+```bash
+uvicorn app.main:app --reload
+```
+
+The API will be available at:
+
+```
+http://localhost:8000
+```
+
+Swagger Documentation:
+
+```
+http://localhost:8000/docs
+```
+
+# 🧪 Running Tests
+
+Run the complete unit test suite:
+
+```bash
+pytest
+```
+
+Run with verbose output:
+
+```bash
+pytest -v
+```
+
+Generate a coverage report:
+
+```bash
+pytest --cov=app --cov-report=term-missing
+```
+
+Generate an HTML coverage report:
+
+```bash
+pytest --cov=app --cov-report=html
+```
+
+Open the generated report:
+
+```
+htmlcov/index.html
+```
+
+### Current Coverage
+
+- ✅ 94% code coverage
+- Fast execution using mocked dependencies
+- No external API calls during testing
+- No PostgreSQL instance required
+- No ChromaDB required
+- No Google Gemini API key required
+
+# 🐳 Docker
+
+Build and start the services:
+
+```bash
+docker compose up --build
+```
+
+Stop the services:
+
+```bash
+docker compose down
+```
+
+Reset PostgreSQL volume:
+
+```bash
+docker compose down -v
+```
+
+The Docker setup includes:
+
+- FastAPI application
+- PostgreSQL database
+- Environment-based configuration
+- Persistent database storage
+
+# ⚙️ Continuous Integration
+
+This project uses **GitHub Actions** to automatically validate every push and pull request.
+
+The CI pipeline performs the following steps:
+
+- Checks out the latest source code
+- Sets up Python
+- Installs project dependencies
+- Executes the complete pytest suite
+- Fails the workflow if any test fails
+
+This ensures that every committed change maintains application stability and prevents regressions before code is merged.
+
+# 🧩 Engineering Challenges & Lessons Learned
+
+Building this project involved much more than implementing features. Throughout development, I encountered several real-world engineering challenges that deepened my understanding of backend development, AI orchestration, testing, and software architecture.
+
+| Challenge                                                   | Root Cause                                                                                                                   | Solution                                                                                      | Key Lesson                                                                              |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **SQLAlchemy model not creating tables during testing**     | `Base.metadata.create_all()` only registers imported models. The `User` entity was never imported in the test configuration. | Imported the `User` model before calling `create_all()`.                                      | SQLAlchemy metadata is populated only after model classes are imported.                 |
+| **In-memory SQLite losing tables between requests**         | Each new connection created a separate in-memory database.                                                                   | Configured the test engine to reuse the same connection for the entire test session.          | SQLite's in-memory databases are connection-scoped, unlike PostgreSQL.                  |
+| **Alembic migrations not detecting models**                 | Alembic was unaware of ORM models because they were not imported into `env.py`.                                              | Imported the entity modules before exposing `Base.metadata`.                                  | Migration tools rely on SQLAlchemy metadata, not file discovery.                        |
+| **bcrypt and Passlib compatibility issues**                 | Version incompatibilities between `passlib` and the installed `bcrypt` package.                                              | Replaced Passlib with direct `bcrypt` usage.                                                  | Simpler dependencies often reduce compatibility problems.                               |
+| **Dependency Injection incorrectly implemented**            | Service objects were instantiated at module import time instead of per request.                                              | Introduced FastAPI dependency injection using `Depends()`.                                    | Request-scoped dependencies improve flexibility, lifecycle management, and testability. |
+| **Custom exception handlers not being triggered**           | Exception handler decorators were missing from the application setup.                                                        | Registered global exception handlers during FastAPI initialization.                           | Raising custom exceptions is not enough—they must also be mapped to HTTP responses.     |
+| **LangGraph node returning `None`**                         | An incorrect indentation caused the node to return `None` instead of the expected state update.                              | Corrected the control flow and ensured every node returned a valid state dictionary.          | State-machine workflows require every node to return a predictable state.               |
+| **Tool call payload mismatch during testing**               | LangChain automatically enriches tool call payloads with additional metadata (such as `type`).                               | Updated assertions to validate the important fields instead of expecting an exact dictionary. | Test behavior rather than implementation details when working with external libraries.  |
+| **Mocking AI dependencies for unit tests**                  | Direct calls to Gemini and ChromaDB made tests slow and dependent on external services.                                      | Injected dependencies and replaced them with mocks during testing.                            | Fast, deterministic unit tests should not rely on external infrastructure.              |
+| **Designing the Assistant Service for testability**         | The service initially created its own LangGraph instance, making it difficult to isolate in tests.                           | Refactored the service to receive the graph through dependency injection.                     | Injecting collaborators leads to cleaner architecture and significantly easier testing. |
+| **Docker PostgreSQL initialization issues**                 | Existing Docker volumes retained outdated credentials after configuration changes.                                           | Removed volumes using `docker compose down -v` and recreated the containers.                  | Persistent Docker volumes preserve data and configuration between container restarts.   |
+| **Improving test coverage without writing redundant tests** | Increasing coverage can lead to duplicate tests that validate the same behavior.                                             | Focused on covering previously untested execution paths rather than repeating assertions.     | High-quality test suites prioritize meaningful behavior coverage over percentage alone. |
+
+---
+
+## 📚 Key Takeaways
+
+This project strengthened my understanding of:
+
+- Designing maintainable backend systems using layered architecture.
+- Applying dependency injection to improve modularity and testability.
+- Building AI workflows with LangChain and LangGraph.
+- Implementing Retrieval-Augmented Generation (RAG) using ChromaDB.
+- Structuring reliable unit tests through mocking and dependency overrides.
+- Managing database schema evolution with Alembic.
+- Debugging framework-level issues instead of applying temporary fixes.
+- Building production-ready APIs with FastAPI, Docker, PostgreSQL, and GitHub Actions.
+- Balancing clean architecture with practical implementation decisions.
+
+# 📈 Future Improvements
+
+Although the project is production-oriented, there are several planned enhancements:
+
+- Add conversational memory for multi-turn interactions
+- Support multiple document collections
+- Introduce role-based access control (RBAC)
+- Add Redis caching for frequently requested responses
+- Stream LLM responses using Server-Sent Events (SSE)
+- Implement request rate limiting
+- Add OpenTelemetry-based observability
+- Integrate Prometheus and Grafana dashboards
+- Deploy using Kubernetes
+- Add integration and end-to-end tests
+- Support multiple LLM providers (Gemini, OpenAI, Anthropic)
+- Implement conversation history persistence
