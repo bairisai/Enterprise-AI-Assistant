@@ -248,3 +248,197 @@ sequenceDiagram
 
     Assistant-->>User: AI Answer
 ```
+
+# 🏗️ Design Principles
+
+This project follows a **layered architecture** to separate responsibilities, improve maintainability, and keep business logic independent of infrastructure concerns. Each layer has a single responsibility and communicates only with the layers below it.
+
+```text
+                HTTP Request
+                     │
+                     ▼
+            FastAPI Routers
+                     │
+                     ▼
+             Service Layer
+                     │
+                     ▼
+          Repository Layer
+                     │
+                     ▼
+          PostgreSQL Database
+```
+
+For AI-related requests, the Service Layer orchestrates the LangGraph workflow:
+
+```text
+                HTTP Request
+                     │
+                     ▼
+            FastAPI Router
+                     │
+                     ▼
+          Assistant Service
+                     │
+                     ▼
+             LangGraph Agent
+                     │
+        ┌────────────┴────────────┐
+        ▼                         ▼
+ Google Gemini              AI Tools (RAG, Date, User Lookup)
+                                    │
+                                    ▼
+                              ChromaDB / PostgreSQL
+```
+
+---
+
+## 🎯 Presentation Layer
+
+**Responsibility**
+
+- Exposes REST APIs
+- Validates incoming requests
+- Returns standardized responses
+- Delegates business logic to services
+
+**Components**
+
+```text
+app/routers/
+```
+
+**Key Principle**
+
+> Routers should remain thin. They coordinate requests and responses without containing business logic.
+
+---
+
+## 🧠 Service Layer
+
+**Responsibility**
+
+- Implements business logic
+- Coordinates repositories and AI workflows
+- Handles authentication and authorization logic
+- Orchestrates LangGraph execution
+
+**Components**
+
+```text
+app/services/
+```
+
+**Key Principle**
+
+> Services define _what_ the application does, independent of how data is stored or retrieved.
+
+---
+
+## 🗄️ Repository Layer
+
+**Responsibility**
+
+- Encapsulates all database interactions
+- Executes queries using SQLAlchemy
+- Keeps persistence logic separate from business logic
+
+**Components**
+
+```text
+app/repositories/
+```
+
+**Key Principle**
+
+> Services should never execute SQL directly. All persistence operations pass through repositories.
+
+---
+
+## 🤖 AI Layer
+
+**Responsibility**
+
+- Orchestrates AI workflows
+- Executes tool-calling
+- Performs Retrieval-Augmented Generation (RAG)
+- Manages vector search and document ingestion
+
+**Components**
+
+```text
+app/ai/
+```
+
+**Key Principle**
+
+> AI orchestration is isolated from business logic, making workflows easier to extend, test, and maintain.
+
+---
+
+## 🔒 Security Layer
+
+**Responsibility**
+
+- Password hashing
+- JWT generation and validation
+- Authentication dependencies
+- Protected route authorization
+
+**Components**
+
+```text
+app/security/
+```
+
+**Key Principle**
+
+> Security concerns are centralized to ensure consistent authentication across the application.
+
+---
+
+## 🛠️ Infrastructure Layer
+
+**Responsibility**
+
+- Database session management
+- Application configuration
+- Environment variables
+- Dependency initialization
+
+**Components**
+
+```text
+app/database/
+app/config.py
+```
+
+**Key Principle**
+
+> Infrastructure code provides technical capabilities without containing business rules.
+
+---
+
+## 🧪 Testing Strategy
+
+The project follows a testing approach that emphasizes **fast, deterministic, and isolated** unit tests.
+
+- External services such as Google Gemini, ChromaDB, and PostgreSQL are mocked during testing.
+- An in-memory SQLite database is used for repository and API tests.
+- Dependency overrides replace production implementations with lightweight test doubles.
+- The test suite runs quickly without requiring API keys, containers, or network access.
+
+This approach enables rapid feedback during development while ensuring the application's business logic remains thoroughly validated.
+
+---
+
+## 📐 Design Principles Applied
+
+The implementation is guided by several established software engineering principles:
+
+- **Single Responsibility Principle (SRP)** — Each class and module has one clearly defined responsibility.
+- **Dependency Injection (DI)** — Dependencies are injected through FastAPI, improving modularity and testability.
+- **Repository Pattern** — Database access is abstracted behind repositories.
+- **Separation of Concerns** — Routing, business logic, persistence, AI orchestration, and security are isolated into dedicated layers.
+- **Composition over Tight Coupling** — Services compose repositories, AI agents, and tools rather than instantiating them internally.
+- **Testability by Design** — Components can be independently mocked and verified through unit tests.
